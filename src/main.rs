@@ -19,7 +19,7 @@ struct Snake {
     field_height: usize,
 }
 
-#[derive(Clone)]
+#[derive(PartialEq)]
 struct SnakeBody {
     x: usize,
     y: usize,
@@ -154,6 +154,18 @@ impl Snake {
         {
             return Err("field out side".to_string());
         }
+        for i in 0..self.lengh - 1 {
+            for j in 0..self.lengh - 1 {
+                if i == j {
+                    continue;
+                }
+                let body = self.body.get(i).unwrap();
+                let other_body = self.body.get(j).unwrap();
+                if body == other_body {
+                    return Err("???".to_string());
+                }
+            }
+        }
         self.body.insert(0, new_head);
         return Ok(());
     }
@@ -197,12 +209,12 @@ fn main() {
     let width = 32;
     let height = 32;
 
-    let mut game_field = GameField::new(width, height, '#', '.');
+    let mut game_field = GameField::new(width, height, '#', ' ');
     game_field.init();
-    let mut snake = Snake::new('@', 3, width, height);
+    let mut snake = Snake::new('O', 3, width, height);
     snake.init(12, 12);
     let read_direction_thread = spawn_read_direction_thread();
-    let mut fruit = Fruit::new(width, height, '$');
+    let mut fruit = Fruit::new(width, height, '@');
 
     loop {
         game_field.tile_reset();
