@@ -234,7 +234,7 @@ fn main() {
 
         game_field.render();
 
-        if let Ok(Some(direction)) = read_direction_thread.try_recv() {
+        if let Ok(direction) = read_direction_thread.try_recv() {
             snake.set_direction(direction);
         }
 
@@ -247,20 +247,19 @@ fn main() {
     }
 }
 
-fn spawn_read_direction_thread() -> mpsc::Receiver<Option<Direction>> {
-    let (tx, rx) = mpsc::channel::<Option<Direction>>();
+fn spawn_read_direction_thread() -> mpsc::Receiver<Direction> {
+    let (tx, rx) = mpsc::channel::<Direction>();
     thread::spawn(move || {
         let options = ReaderOptions::default();
         let reader = TermReader::open_stdin(&options).unwrap();
         loop {
-            let direction = match reader.read_bytes(3).unwrap()[2] {
-                65 => Some(Direction::Up),
-                66 => Some(Direction::Down),
-                68 => Some(Direction::Left),
-                67 => Some(Direction::Right),
-                _ => None,
-            };
-            tx.send(direction).unwrap();
+            match reader.read_bytes(3).unwrap()[2] {
+                65 => tx.send(Direction::Up).unwrap(),
+                66 => tx.send(Direction::Down).unwrap(),
+                68 => tx.send(Direction::Left).unwrap(),
+                67 => tx.send(Direction::Right).unwrap(),
+                _ => (),
+            }
         }
     });
     return rx;
